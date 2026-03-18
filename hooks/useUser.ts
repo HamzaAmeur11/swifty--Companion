@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { getUser } from '../services/api42';
-import { User, UserError } from '../types';
+import { User } from '../types';
 
 export function useUser(login: string) {
-  return useQuery<User, UserError>({
+  return useQuery<User, Error>({
     queryKey: ['user', login],
     queryFn: () => getUser(login),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
     enabled: !!login,
   });
 }

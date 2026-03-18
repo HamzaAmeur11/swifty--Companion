@@ -1,42 +1,40 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface SearchBarProps {
+interface Props {
   onSearch: (login: string) => void;
-  disabled?: boolean;
+  loading?: boolean;
 }
 
-export function SearchBar({ onSearch, disabled = false }: SearchBarProps) {
-  const [login, setLogin] = useState('');
+export default function SearchBar({ onSearch, loading }: Props) {
+  const [value, setValue] = useState('');
 
-  const handleSubmit = () => {
-    if (login.trim()) {
-      onSearch(login.trim());
-    }
-  };
+  function handleSubmit() {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    onSearch(trimmed);
+  }
 
   return (
-    <View className="flex-1 px-4 py-6 justify-center gap-4">
+    <View className="flex-row items-center gap-2 w-full px-4">
       <TextInput
-        className="bg-zinc-800 text-white px-4 py-3 rounded-lg text-base placeholder-zinc-500"
-        placeholder="Enter login"
+        className="flex-1 bg-zinc-800 text-white rounded-xl px-4 py-3 text-base border border-zinc-700"
+        placeholder="Enter a 42 login..."
         placeholderTextColor="#71717a"
-        value={login}
-        onChangeText={setLogin}
+        value={value}
+        onChangeText={setValue}
         onSubmitEditing={handleSubmit}
-        editable={!disabled}
+        autoCapitalize="none"
+        autoCorrect={false}
         returnKeyType="search"
       />
       <TouchableOpacity
-        className={`${
-          disabled ? 'bg-zinc-700' : 'bg-indigo-500'
-        } py-3 px-4 rounded-lg`}
         onPress={handleSubmit}
-        disabled={disabled || !login.trim()}
+        disabled={loading}
+        className="bg-indigo-500 rounded-xl px-5 py-3 active:opacity-70"
       >
-        <Text className="text-white text-center font-semibold text-base">
-          Search
+        <Text className="text-white font-semibold text-base">
+          {loading ? '...' : 'Search'}
         </Text>
       </TouchableOpacity>
     </View>

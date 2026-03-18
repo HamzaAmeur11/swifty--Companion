@@ -1,69 +1,67 @@
 import { useEffect, useState, useCallback } from 'react';
 import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
-import { getToken } from '../services/storage';
-import { exchangeCodeForToken } from '../services/auth';
-import { AUTH_URL } from '../constants/api';
-
-const clientId = process.env.EXPO_PUBLIC_CLIENT_ID;
-const redirectUri = AuthSession.getRedirectUrl();
+import { useAuthRequest } from 'expo-auth-session';
+import { exchangeCodeForToken, getValidToken, logout } from '../services/auth';
+import { AUTH_URL, TOKEN_URL, CLIENT_ID, REDIRECT_URI } from '../constants/api';
 
 WebBrowser.maybeCompleteAuthSession();
+
+const discovery = {
+  authorizationEndpoint: AUTH_URL,
+  tokenEndpoint: TOKEN_URL,
+};
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [loginInProgress, setLoginInProgress] = useState(false);
+
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId: CLIENT_ID,
+      redirectUri: REDIRECT_URI,
+      scopes: ['public'],
+      usePKCE: false,
+    },
+    discovery
+  );
 
   useEffect(() => {
-    checkAuthentication();
+    checkAuth();
   }, []);
 
-  async function checkAuthentication() {
+  useEffect(() => {
+    if (response?.type === 'success' && response.params.code) {
+      handleCode(response.params.code);
+    }
+  }, [response]);
+
+  async function checkAuth() {
+    setIsLoading(true);
+    const token = await getValidToken();
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
+  }
+
+  async function handleCode(code: string) {
+    setIsLoading(true);
     try {
-      const token = await getToken();
-      setIsAuthenticated(!!token);
+      await exchangeCodeForToken(code);
+      setIsAuthenticated(true);
+    } catch {
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   }
 
-  const login = useCallback(async () => {
-    if (loginInProgress || !clientId) return;
-    
-    try {
-      setLoginInProgress(true);
+  const signIn = useCallback(() => {
+    promptAsync();
+  }, [promptAsync]);
 
-      const request = new AuthSession.AuthRequest({
-        clientId,
-        scopes: ['public'],
-        redirectUri,
-      });
-
-      const result = await request.promptAsync(
-        {
-          authorizationEndpoint: AUTH_URL,
-        }
-      );
-
-      if (result.type === 'success') {
-        const code = result.params.code;
-        if (code) {
-          await exchangeCodeForToken(code);
-          setIsAuthenticated(true);
-        }
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setIsAuthenticated(false);
-    } finally {
-      setLoginInProgress(false);
-    }
+  const signOut = useCallback(async () => {
+    await logout();
+    setIsAuthenticated(false);
   }, []);
 
-  return {
-    isAuthenticated,
-    isLoading,
-    login,
-  };
+  return { isAuthenticated, isLoading, signIn, signOut, request };
 }

@@ -1,14 +1,14 @@
 export interface Token {
   access_token: string;
   refresh_token: string;
-  expires_at: number; // Unix timestamp ms
+  expires_at: number;
 }
 
 export interface Skill {
   id: number;
   name: string;
-  level: number; // e.g. 7.42
-  percentage: number; // 0–100
+  level: number;
+  percentage: number;
 }
 
 export interface Project {
@@ -40,14 +40,4 @@ export interface User {
     passed: boolean | null;
     status: string;
   }>;
-}
-
-export interface AuthError {
-  type: 'NETWORK' | 'UNAUTHORIZED' | 'UNKNOWN';
-  message: string;
-}
-
-export interface UserError {
-  type: 'NOT_FOUND' | 'NETWORK' | 'UNAUTHORIZED' | 'SERVER_ERROR' | 'UNKNOWN';
-  message: string;
 }

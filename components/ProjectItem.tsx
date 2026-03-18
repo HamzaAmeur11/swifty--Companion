@@ -1,29 +1,35 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-interface ProjectItemProps {
+interface Props {
   name: string;
   passed: boolean | null;
-  mark: number | null;
+  finalMark: number | null;
 }
 
-export function ProjectItem({ name, passed, mark }: ProjectItemProps) {
-  const badgeColor = passed ? 'bg-green-900/50 border-green-600' : 'bg-red-900/50 border-red-600';
-  const badgeTextColor = passed ? 'text-green-400' : 'text-red-400';
-  const badgeLabel = passed ? 'PASS' : 'FAIL';
+export default function ProjectItem({ name, passed, finalMark }: Props) {
+  const isPassed = passed === true;
 
   return (
-    <View className="flex-row justify-between items-center bg-zinc-900 p-3 rounded-lg mb-2">
-      <Text className="text-white flex-1" numberOfLines={1}>
+    <View className="flex-row justify-between items-center py-2 border-b border-zinc-800">
+      <Text className="text-zinc-300 text-sm flex-1 mr-2" numberOfLines={1}>
         {name}
       </Text>
-      <View className="flex-row gap-2 items-center">
-        {mark !== null && (
-          <Text className="text-zinc-400 text-sm">{mark}%</Text>
+      <View className="flex-row items-center gap-2">
+        {finalMark !== null && (
+          <Text className="text-zinc-500 text-xs">{finalMark}/100</Text>
         )}
-        <View className={`px-3 py-1 rounded border ${badgeColor}`}>
-          <Text className={`text-xs font-bold ${badgeTextColor}`}>
-            {badgeLabel}
+        <View
+          className={`px-2 py-0.5 rounded-full ${
+            isPassed ? 'bg-green-900' : 'bg-red-900'
+          }`}
+        >
+          <Text
+            className={`text-xs font-semibold ${
+              isPassed ? 'text-green-400' : 'text-red-400'
+            }`}
+          >
+            {isPassed ? 'PASS' : 'FAIL'}
           </Text>
         </View>
       </View>

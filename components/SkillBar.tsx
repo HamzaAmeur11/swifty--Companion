@@ -1,39 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { Skill } from '../types';
 
-interface SkillBarProps {
+interface Props {
   skill: Skill;
 }
 
-export function SkillBar({ skill }: SkillBarProps) {
-  const [animatedWidth] = useState(new Animated.Value(0));
+export default function SkillBar({ skill }: Props) {
+  const animWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(animatedWidth, {
+    Animated.timing(animWidth, {
       toValue: skill.percentage,
-      duration: 1000,
+      duration: 700,
       useNativeDriver: false,
     }).start();
-  }, [skill.percentage, animatedWidth]);
+  }, [skill.percentage]);
 
-  const widthInterpolation = animatedWidth.interpolate({
+  const widthInterpolated = animWidth.interpolate({
     inputRange: [0, 100],
     outputRange: ['0%', '100%'],
   });
 
   return (
-    <View className="gap-2 mb-3">
-      <View className="flex-row justify-between items-center">
-        <Text className="text-white font-medium flex-1">{skill.name}</Text>
-        <Text className="text-indigo-400 font-semibold">
-          {skill.level.toFixed(2)}
+    <View className="mb-3">
+      <View className="flex-row justify-between mb-1">
+        <Text className="text-zinc-300 text-sm" numberOfLines={1}>
+          {skill.name}
+        </Text>
+        <Text className="text-zinc-400 text-xs">
+          lvl {skill.level.toFixed(2)} · {Math.round(skill.percentage)}%
         </Text>
       </View>
-      <View className="bg-zinc-800 rounded-full h-2 overflow-hidden">
+      <View className="h-2 bg-zinc-700 rounded-full overflow-hidden">
         <Animated.View
-          style={{ width: widthInterpolation }}
-          className="bg-indigo-500 h-full rounded-full"
+          className="h-2 bg-indigo-500 rounded-full"
+          style={{ width: widthInterpolated }}
         />
       </View>
     </View>
